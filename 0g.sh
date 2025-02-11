@@ -257,7 +257,18 @@ function install_storage_node() {
     "args": "--config ./config-testnet-turbo.toml",
     "autorestart": true,
     "min_uptime": "10s",
-    "restart_delay": 3000
+    "restart_delay": 3000,
+    "cron_restart": "0 0 * * *",
+    "watch": false,
+    "script_interpreter": "none",
+    "exec_interpreter": "none",
+    "exec_mode": "fork",
+    "env": {
+      "CLEAN_LOGS": "true"
+    },
+    "post_update": [
+      "find ~/0g-storage-node/run/log -type f -mtime +2 -name '*.log*' -delete"
+    ]
   }]
 }
 EOF
