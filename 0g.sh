@@ -247,11 +247,26 @@ function install_storage_node() {
     s|# miner_key = ""|miner_key = "'$miner_key'"|
     ' $HOME/0g-storage-node/run/config-testnet-turbo.toml
 
-    # 启动
-    cd ~/0g-storage-node/run
-    screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config $HOME/0g-storage-node/run/config-testnet-turbo.toml
+    # 创建 pm2 配置文件
+    cat > $HOME/0g-storage-node/run/zgs-node.json << EOF
+{
+  "apps": [{
+    "name": "zgs-node",
+    "cwd": "$HOME/0g-storage-node/run",
+    "script": "$HOME/0g-storage-node/target/release/zgs_node",
+    "args": "--config ./config-testnet-turbo.toml",
+    "autorestart": true,
+    "min_uptime": "10s",
+    "restart_delay": 3000
+  }]
+}
+EOF
 
-    echo '====================== 安装完成，使用 screen -ls 命令查询 ==========================='
+    # 使用 pm2 启动
+    cd $HOME/0g-storage-node/run
+    pm2 start zgs-node.json
+
+    echo '====================== 安装完成，使用 pm2 logs zgs-node 查看日志 ==========================='
 
 }
 
@@ -278,13 +293,9 @@ function check_storage_error() {
 
 # 重启存储节点
 function restart_storage() {
-    # 退出现有进程
-    screen -S zgs_node_session -X quit
-    # 启动
-    cd ~/0g-storage-node/run
-    screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config $HOME/0g-storage-node/run/config-testnet-turbo.toml
-    echo '====================== 启动成功，请通过screen -r zgs_node_session 查询 ==========================='
-
+    cd $HOME/0g-storage-node/run
+    pm2 restart zgs-node
+    echo '====================== 重启完成，使用 pm2 logs zgs-node 查看日志 ==========================='
 }
 
 # 删除存储节点日志
@@ -414,7 +425,7 @@ function main_menu() {
 
         *) echo "无效选项。" ;;
         esac
-        
+
         echo "按任意键返回主菜单..."
         read -n 1
     done
