@@ -5,7 +5,7 @@ WEBHOOK_URL="your_webhook_url_here"
 
 # 获取当前日期格式化字符串
 DATE=$(date +"%Y-%m-%d")
-LOG_FILE="./log/zgs.log.${DATE}"
+LOG_FILE="$HOME/0g-storage-node/run/log/zgs.log.${DATE}"
 
 # 获取公网IP地址
 IP_ADDR=$(curl -s ifconfig.me)
