@@ -252,6 +252,34 @@ function install_storage_node() {
         json_rpc=$DEFAULT_RPC
     fi
 
+    # 添加监控配置
+    echo "是否配置tx_seq监控? 如果配置,请输入企业微信机器人webhook地址,直接回车则跳过:"
+    read -p "Webhook URL: " webhook_url
+
+    if [ ! -z "$webhook_url" ]; then
+        if [[ ! $webhook_url =~ ^https?:// ]]; then
+            echo "无效的webhook url格式,跳过监控配置"
+        else
+            # 创建日志目录
+            mkdir -p $HOME/0g-storage-node/run/log
+
+            # 下载监控脚本
+            curl -o $HOME/0g-storage-node/run/monitor_tx_seq.sh https://raw.githubusercontent.com/fanyilun0/0g.ai/main/monitor_tx_seq.sh
+            
+            # 替换webhook url
+            escaped_url=$(echo "$webhook_url" | sed 's/[\/&]/\\&/g')
+            sed -i "s/your_webhook_url_here/$escaped_url/" $HOME/0g-storage-node/run/monitor_tx_seq.sh
+            
+            # 设置执行权限
+            chmod +x $HOME/0g-storage-node/run/monitor_tx_seq.sh
+            
+            # 添加crontab定时任务
+            (crontab -l 2>/dev/null; echo "0 0 * * * $HOME/0g-storage-node/run/monitor_tx_seq.sh") | crontab -
+            
+            echo "监控配置完成,每天执行一次"
+        fi
+    fi
+
     sed -i '
     s|# blockchain_rpc_endpoint = ".*"|blockchain_rpc_endpoint = "'$json_rpc'"|
     s|# miner_key = ""|miner_key = "'$miner_key'"|
