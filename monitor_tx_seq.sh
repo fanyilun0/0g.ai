@@ -7,10 +7,18 @@ WEBHOOK_URL="your_webhook_url_here"
 DATE=$(date +"%Y-%m-%d")
 LOG_FILE="$HOME/0g-storage-node/run/log/zgs.log.${DATE}"
 
+# 调试信息
+echo "Debug: Using log file: $LOG_FILE"
+
+# 检查文件权限
+if [ ! -r "$LOG_FILE" ]; then
+    echo "Error: No read permission for log file: $LOG_FILE"
+    exit 1
+fi
+
 # 获取公网IP地址
 IP_ADDR=$(curl -s ifconfig.me)
 if [ -z "$IP_ADDR" ]; then
-    # 备选方案:使用hostname -I获取第一个IP
     IP_ADDR=$(hostname -I | awk '{print $1}')
 fi
 
@@ -25,15 +33,25 @@ if [ ! -f "$LOG_FILE" ]; then
     exit 1
 fi
 
-# 提取最后一个tx_seq号码
-TX_SEQ=$(grep -o 'tx_seq:[0-9]\+' "$LOG_FILE" | tail -n 1 | cut -d':' -f2)
+# 显示文件内容的最后几行用于调试
+echo "Debug: Last few lines of log file:"
+tail -n 5 "$LOG_FILE"
+
+# 使用更灵活的grep模式来提取tx_seq
+TX_SEQ=$(grep -o '[Tt][Xx]_[Ss][Ee][Qq][:=][[:space:]]*[0-9]\+' "$LOG_FILE" | tail -n 1 | grep -o '[0-9]\+')
+
+# 调试信息
+echo "Debug: Extracted tx_seq: $TX_SEQ"
 
 if [ -z "$TX_SEQ" ]; then
     echo "Error: Failed to extract tx_seq number"
+    # 显示grep的完整输出用于调试
+    echo "Debug: Full grep output:"
+    grep -o '[Tt][Xx]_[Ss][Ee][Qq][:=][[:space:]]*[0-9]\+' "$LOG_FILE"
     exit 1
 fi
 
-# 构建要发送的JSON数据,包含IP地址和tx_seq
+# 构建要发送的JSON数据
 JSON_DATA="{\"msgtype\":\"text\",\"text\":{\"content\":\"Server IP: $IP_ADDR\nCurrent tx_seq: $TX_SEQ\"}}"
 
 # 发送到企业微信机器人
