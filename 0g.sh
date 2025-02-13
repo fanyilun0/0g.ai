@@ -274,7 +274,7 @@ function install_storage_node() {
             chmod +x $HOME/0g-storage-node/run/monitor_tx_seq.sh
             
             # 添加crontab定时任务
-            (crontab -l 2>/dev/null; echo "0 0 * * * $HOME/0g-storage-node/run/monitor_tx_seq.sh") | crontab -
+            (crontab -l 2>/dev/null; echo "0 0 * * * $HOME/0g-storage-node/run/monitor_tx_seq.sh >> $HOME/0g-storage-node/run/cron.log 2>&1") | crontab -
             
             echo "监控配置完成,每天执行一次"
         fi
