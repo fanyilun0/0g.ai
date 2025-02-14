@@ -242,7 +242,7 @@ function install_storage_node() {
     # 编辑配置
     read -p "请输入你想导入的EVM钱包私钥，不带0x: " miner_key
     # 设置默认的 JSON-RPC
-    DEFAULT_RPC="https://rpc.ankr.com/0g_newton"
+    DEFAULT_RPC="https://evmrpc-testnet.0g.ai"
     read -p "请输入使用的 JSON-RPC (直接回车使用默认值: ${DEFAULT_RPC}): " json_rpc
     json_rpc=${json_rpc:-$DEFAULT_RPC}  # 如果用户输入为空，使用默认值
 
