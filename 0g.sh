@@ -321,12 +321,25 @@ EOF
 
 # 检查存储节点同步状态
 function check_storage_status() {
+    # Check if jq is installed
+    if ! command -v jq &> /dev/null; then
+        echo "jq is not installed. Installing..."
+        if command -v apt &> /dev/null; then
+            sudo apt update && sudo apt install -y jq
+        elif command -v yum &> /dev/null; then
+            sudo yum install -y jq
+        else
+            echo "Could not install jq. Please install it manually."
+            exit 1
+        fi
+    fi
+
     while true; do
-    response=$(curl -s -X POST http://localhost:5678 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"zgs_getStatus","params":[],"id":1}')
-    logSyncHeight=$(echo $response | jq '.result.logSyncHeight')
-    connectedPeers=$(echo $response | jq '.result.connectedPeers')
-    echo -e "Block: \033[32m$logSyncHeight\033[0m, Peers: \033[34m$connectedPeers\033[0m"
-    sleep 5;
+        response=$(curl -s -X POST http://localhost:5678 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"zgs_getStatus","params":[],"id":1}')
+        logSyncHeight=$(echo $response | jq '.result.logSyncHeight')
+        connectedPeers=$(echo $response | jq '.result.connectedPeers')
+        echo -e "Block: \033[32m$logSyncHeight\033[0m, Peers: \033[34m$connectedPeers\033[0m"
+        sleep 5;
     done
 }
 
