@@ -51,8 +51,38 @@ if [ -z "$TX_SEQ" ]; then
     exit 1
 fi
 
+# 检查存储节点同步状态
+function check_storage_status() {
+    # Check if jq is installed
+    if ! command -v jq &> /dev/null; then
+        echo "jq is not installed. Installing..."
+        if command -v apt &> /dev/null; then
+            sudo apt update && sudo apt install -y jq
+        elif command -v yum &> /dev/null; then
+            sudo yum install -y jq
+        else
+            echo "Could not install jq. Please install it manually."
+            exit 1
+        fi
+    fi
+
+    response=$(curl -s -X POST http://localhost:5678 -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"zgs_getStatus","params":[],"id":1}')
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to get node status"
+        exit 1
+    fi
+    
+    logSyncHeight=$(echo $response | jq '.result.logSyncHeight')
+    connectedPeers=$(echo $response | jq '.result.connectedPeers')
+    echo "获取状态成功 - 区块: $logSyncHeight, 节点数: $connectedPeers"
+}
+
+# 获取节点状态
+check_storage_status
+NODE_STATUS="区块高度: $logSyncHeight\n节点连接数: $connectedPeers"
+
 # 构建要发送的JSON数据
-JSON_DATA="{\"msgtype\":\"text\",\"text\":{\"content\":\"Server IP: $IP_ADDR\nCurrent tx_seq: $TX_SEQ\"}}"
+JSON_DATA="{\"msgtype\":\"text\",\"text\":{\"content\":\"服务器IP: $IP_ADDR\n当前tx_seq: $TX_SEQ\n$NODE_STATUS\"}}"
 
 # 发送到企业微信机器人
 curl -s -H "Content-Type: application/json" -X POST -d "$JSON_DATA" "$WEBHOOK_URL"
