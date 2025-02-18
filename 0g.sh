@@ -283,6 +283,7 @@ function install_storage_node() {
     sed -i '
     s|# blockchain_rpc_endpoint = ".*"|blockchain_rpc_endpoint = "'$json_rpc'"|
     s|# miner_key = ""|miner_key = "'$miner_key'"|
+    s|db_max_num_sectors = 4000000000|db_max_num_sectors = 400000000|
     ' $HOME/0g-storage-node/run/config-testnet-turbo.toml
 
     # 创建 pm2 配置文件
