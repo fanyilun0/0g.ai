@@ -228,7 +228,7 @@ function install_storage_node() {
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
     # 克隆仓库
-    git clone -b v0.8.4 https://github.com/0glabs/0g-storage-node.git
+    git clone -b v1.0.0 https://github.com/0glabs/0g-storage-node.git
 
     # 进入对应目录构建
     cd 0g-storage-node
